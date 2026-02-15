@@ -331,8 +331,21 @@ def gateway(
     cron_store_path = get_data_dir() / "cron" / "jobs.json"
     cron = CronService(cron_store_path)
     
+    # Inbox mode: deterministic fast-path for inbox chats
+    if config.inbox.enabled:
+        from nanobot.agent.inbox import InboxAgentLoop
+        AgentClass = InboxAgentLoop
+        extra_kwargs = {"inbox_config": {
+            "inbox_chat_ids": config.inbox.inbox_chat_ids,
+            "obsidian_root": config.inbox.obsidian_root,
+            "day_cutoff_hour": config.inbox.day_cutoff_hour,
+        }}
+    else:
+        AgentClass = AgentLoop
+        extra_kwargs = {}
+
     # Create agent with cron service
-    agent = AgentLoop(
+    agent = AgentClass(
         bus=bus,
         provider=provider,
         workspace=config.workspace_path,
@@ -347,6 +360,7 @@ def gateway(
         restrict_to_workspace=config.tools.restrict_to_workspace,
         session_manager=session_manager,
         mcp_servers=config.tools.mcp_servers,
+        **extra_kwargs,
     )
     
     # Set cron callback (needs agent)

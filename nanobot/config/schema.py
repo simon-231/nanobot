@@ -232,6 +232,14 @@ class ToolsConfig(BaseModel):
     mcp_servers: dict[str, MCPServerConfig] = Field(default_factory=dict)
 
 
+class InboxConfig(BaseModel):
+    """Inbox feature configuration for deterministic message-to-Obsidian routing."""
+    enabled: bool = False
+    inbox_chat_ids: list[str] = Field(default_factory=list)
+    obsidian_root: str = "~/Documents/Obsidian"
+    day_cutoff_hour: int = 4
+
+
 class Config(BaseSettings):
     """Root configuration for nanobot."""
     agents: AgentsConfig = Field(default_factory=AgentsConfig)
@@ -239,6 +247,7 @@ class Config(BaseSettings):
     providers: ProvidersConfig = Field(default_factory=ProvidersConfig)
     gateway: GatewayConfig = Field(default_factory=GatewayConfig)
     tools: ToolsConfig = Field(default_factory=ToolsConfig)
+    inbox: InboxConfig = Field(default_factory=InboxConfig)  # Inbox-Feature
     
     @property
     def workspace_path(self) -> Path:
